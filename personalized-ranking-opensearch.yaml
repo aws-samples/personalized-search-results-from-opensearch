@@ -1,0 +1,502 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  OpenSearchInstanceType:
+    Type: String
+    Default: m5.xlarge.search
+    AllowedValues:
+      - m3.medium.search
+      - m3.large.search
+      - m3.xlarge.search
+      - m3.2xlarge.search
+      - m4.large.search
+      - m4.xlarge.search
+      - m4.2xlarge.search
+      - m4.4xlarge.search
+      - m4.10xlarge.search
+      - m5.large.search
+      - m5.xlarge.search
+      - m5.2xlarge.search
+      - m5.4xlarge.search
+      - m5.12xlarge.search
+
+
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 172.16.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 172.16.10.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 172.16.11.0/24
+
+  PublicSubnet3CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 172.16.12.0/24
+
+  PrivateSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 172.16.20.0/24
+
+  PrivateSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
+    Type: String
+    Default: 172.16.21.0/24
+
+  PrivateSubnet3CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the third Availability Zone
+    Type: String
+    Default: 172.16.22.0/24
+
+
+
+  SageMakerInstanceType:
+    Type: String
+    Default: ml.t2.medium
+    AllowedValues:
+      - ml.t2.medium
+      - ml.t2.large
+      - ml.t2.xlarge
+      - ml.t3.medium
+      - ml.t3.large
+      - ml.t3.xlarge
+      - ml.m4.xlarge
+      - ml.m4.2xlarge
+      - ml.m4.4xlarge
+      - ml.m4.10xlarge
+      - ml.m4.16xlarge
+      - ml.m5.large
+      - ml.m5.xlarge
+      - ml.m5.2xlarge
+      - ml.m5.4xlarge
+      - ml.m5.8xlarge
+      - ml.m5.12xlarge
+      - ml.m5.16xlarge
+      - ml.m5.24xlarge
+      - ml.c4.xlarge
+      - ml.c4.2xlarge
+      - ml.c4.4xlarge
+      - ml.c4.8xlarge
+      - ml.c5.xlarge
+      - ml.c5.2xlarge
+      - ml.c5.4xlarge
+      - ml.c5.9xlarge
+      - ml.c5.12xlarge
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Instance Configuration"
+        Parameters:
+          - OpenSearchInstanceType
+          - SageMakerInstanceType
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - VpcCIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - PublicSubnet3CIDR
+          - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
+          - PrivateSubnet3CIDR
+
+
+Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: "OpenSearch-Personalize"
+
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: "OpenSearch-Personalize"
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Public Subnet (AZ2)
+
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 2, !GetAZs "" ]
+      CidrBlock: !Ref PublicSubnet3CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Public Subnet (AZ3)
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Subnet (AZ1)
+
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Subnet (AZ2)
+
+
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 2, !GetAZs "" ]
+      CidrBlock: !Ref PrivateSubnet3CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Subnet (AZ3)
+
+  NatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    DeletionPolicy: Delete
+    Properties:
+      Domain: vpc
+
+  NatGateway2EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    DeletionPolicy: Delete
+    Properties:
+      Domain: vpc
+
+  NatGateway3EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    DeletionPolicy: Delete
+    Properties:
+      Domain: vpc
+
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+
+  NatGateway3:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway3EIP.AllocationId
+      SubnetId: !Ref PublicSubnet3
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet3
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Routes (AZ1)
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Routes (AZ2)
+
+  DefaultPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway2
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+
+  PrivateRouteTable3:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: OpenSearch-Personalize Private Routes (AZ3)
+
+  DefaultPrivateRoute3:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway3
+
+  PrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable3
+      SubnetId: !Ref PrivateSubnet3
+
+
+
+  IngressSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for opensearch ingress rule"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - FromPort: "443"
+          Description: All traffic on port 443
+          IpProtocol: tcp
+          ToPort: "443"
+          CidrIp: !Ref PrivateSubnet1CIDR
+      SecurityGroupEgress:
+        - Description: Allow all outbound traffic
+          IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+
+
+  OpenSearchDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: os-domain
+      EngineVersion: OpenSearch_2.11
+      ClusterConfig:
+        InstanceType: !Ref OpenSearchInstanceType
+        InstanceCount: 1
+        DedicatedMasterEnabled: false
+        ZoneAwarenessEnabled: false
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+        VolumeType: gp2
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      EncryptionAtRestOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !GetAtt NotebookInstanceRole.Arn
+            Action: "es:*"
+            Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/os-domain/*
+      VPCOptions:
+        SubnetIds:
+          - !Ref PrivateSubnet1
+        SecurityGroupIds:
+          - !Ref IngressSecurityGroup
+      AdvancedSecurityOptions:
+        Enabled: true
+        InternalUserDatabaseEnabled: false
+        MasterUserOptions:
+          MasterUserARN: !GetAtt NotebookInstanceRole.Arn
+
+
+  NotebookInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonPersonalizeFullAccess
+      Policies:
+        - PolicyName: RolePermissionsForNotebook
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:AttachRolePolicy
+                  - iam:GetRole
+                  - iam:PassRole
+                  - iam:PutRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:DeleteRole
+                  - iam:DetachRolePolicy
+                  - iam:ListRolePolicies
+                  - iam:DeleteRolePolicy
+                Resource:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/${AWS::AccountId}-personalize-os-ranking-role
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/${AWS::AccountId}-opensearch-role-for-personalize
+        - PolicyName: OpenSearchAccessForAssociatingPackage
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - es:ESHttp*
+                  - es:AssociatePackage
+                  - es:ListPackagesForDomain
+                Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/os-domain
+        - PolicyName: OpenSearchAccessForDescribePackages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - es:DescribePackages
+                Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*
+
+  KmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for SageMaker notebook instance
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "kms:*"
+            Resource: "*"
+
+  SageMakerNotebookInstance:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: my-notebook
+      InstanceType: !Ref SageMakerInstanceType
+      RoleArn: !GetAtt NotebookInstanceRole.Arn
+      KmsKeyId: !Ref KmsKey
+      SecurityGroupIds:
+        - !Ref IngressSecurityGroup
+      SubnetId: !Ref PrivateSubnet1
+
+
+Outputs:
+
+  OpenSearchDomainEndpoint:
+    Value: !GetAtt OpenSearchDomain.DomainEndpoint
+    Description: The OpenSearch domain endpoint
+
+  OpenSearchDomainArn:
+    Value: !GetAtt OpenSearchDomain.Arn
+    Description: The ARN of the OpenSearch domain
+
+  Region:
+    Value: !Ref AWS::Region
+
+  OpenSearchDomainName:
+    Value: !Ref OpenSearchDomain
