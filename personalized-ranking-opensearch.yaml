@@ -21,7 +21,14 @@ Parameters:
       - m5.4xlarge.search
       - m5.12xlarge.search
 
-
+  CreateOpenSearchServiceLinkedRole:
+    Type: String
+    Description: >
+      If your account already has an IAM Role named 'AWSServiceRoleForAmazonOpenSearchService', select 'No'. Otherwise, select 'Yes' and one will be created.
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "Yes"
 
   VpcCIDR:
     Description: Please enter the IP range (CIDR notation) for this VPC
@@ -93,6 +100,10 @@ Parameters:
       - ml.c5.9xlarge
       - ml.c5.12xlarge
 
+Conditions:
+  CreateOpenSearchServiceLinkedRole: !Equals
+    - !Ref CreateOpenSearchServiceLinkedRole
+    - "Yes"
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -102,6 +113,7 @@ Metadata:
         Parameters:
           - OpenSearchInstanceType
           - SageMakerInstanceType
+          - CreateOpenSearchServiceLinkedRole
       - Label:
           default: "Network Configuration"
         Parameters:
@@ -362,6 +374,32 @@ Resources:
           IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
 
+  OpenSearchServiceLinkedRole:
+    Condition: CreateOpenSearchServiceLinkedRole
+    Type: AWS::IAM::ServiceLinkedRole
+    Properties:
+      AWSServiceName: opensearchservice.amazonaws.com
+      Description: "Role for OpenSearch to access resources in VPC"
+
+  OpenSearchRoleWaitHandle:
+    Condition: CreateOpenSearchServiceLinkedRole
+    DependsOn: OpenSearchServiceLinkedRole
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+  WaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+  OpenSearchRoleWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    Properties:
+      Handle:
+        !If [
+          CreateOpenSearchServiceLinkedRole,
+          !Ref OpenSearchRoleWaitHandle,
+          !Ref WaitHandle,
+        ]
+      Timeout: "1"
+      Count: 0
 
   OpenSearchDomain:
     Type: AWS::OpenSearchService::Domain
