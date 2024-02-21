@@ -1,4 +1,4 @@
-## **Unlock personalized experiences powered by AI using Amazon Personalize and Amazon OpenSearch Service**
+## **Unlocking Personalized Experiences Powered by AI using Amazon Personalize and Amazon OpenSearch**
 
 [OpenSearch](https://opensearch.org/) is a scalable, flexible, and extensible open-source software suite for semantic
 search, log analytics, security monitoring, and observability applications, licensed under the Apache 2.0 license.
@@ -70,6 +70,9 @@ default values set in the template.
 - Choose an OpenSearch instance type. We here select an instance type like the "m5.xlarge.search" which has a "Maximum
    size of HTTP request payloads" of 100MB to support our bulk index file upload.
 - Select an instance type for the SageMaker notebook that meets your performance needs.
+- You will have to navigate to the [Identity and Access Management(IAM) service Roles page](https://console.aws.amazon.com/iam/home#/roles) and search for the role name `AWSServiceRoleForAmazonOpenSearchService`, if this role exists, select 'No' otherwise select 'Yes'
+
+
 
 ![Stack Params](images/stack-params2.png)
 
