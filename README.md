@@ -1,4 +1,4 @@
-## **Unlocking Personalized Experiences Powered by AI using Amazon Personalize and Amazon OpenSearch**
+## **Unlock personalized experiences powered by AI using Amazon Personalize and Amazon OpenSearch Service**
 
 [OpenSearch](https://opensearch.org/) is a scalable, flexible, and extensible open-source software suite for semantic
 search, log analytics, security monitoring, and observability applications, licensed under the Apache 2.0 license.

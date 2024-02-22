@@ -515,6 +515,7 @@ Resources:
     Type: AWS::SageMaker::NotebookInstance
     Properties:
       NotebookInstanceName: my-notebook
+      DefaultCodeRepository: "https://github.com/aws-samples/personalized-search-results-from-opensearch"
       InstanceType: !Ref SageMakerInstanceType
       RoleArn: !GetAtt NotebookInstanceRole.Arn
       KmsKeyId: !Ref KmsKey
