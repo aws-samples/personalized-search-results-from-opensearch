@@ -44,7 +44,7 @@ in a new tab to start the process of deploying the items you need via CloudForma
 
 The below button deploys the CloudFormation stack in us-east-1 region.
 
-[![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://s3.us-east-1.amazonaws.com/aws-ml-blog/artifacts/personalized-search-results-from-opensearch/personalized-ranking-opensearch.yaml.yaml&stackName=personalize-opensearch-ranking)
+[![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://personalize-solution-staging-us-east-1.s3.amazonaws.com/blog-unlocking-personalized-experiences-personalize-opensearch/personalized-ranking-opensearch.yaml)
 
 You can also follow along with the screenshots below.
 
